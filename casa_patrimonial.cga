@@ -1,0 +1,268 @@
+version "2015.1"
+
+
+@Range(4.5,5.5)
+attr AlturaPrimerPiso = 4.6
+@Range(4.5,5.5)
+attr AlturaSegundoPiso = 4.6
+
+
+@StartRule
+Lot -->
+	alignScopeToAxes(y)
+	Alineamiento(scope.sy)
+	
+Alineamiento(DimY) -->
+	extrude(world.y, 50)
+	split(y){DimY: ZocaloBase | ~1: NIL}
+	
+ZocaloBase -->
+	comp(f){top:Planta | side: BordeZocalo}
+	
+BordeZocalo -->
+	color(.3,.7,.7)
+	
+Planta -->
+	extrude(world.y, AlturaPrimerPiso+AlturaSegundoPiso)
+	split(y){AlturaPrimerPiso: PPiso | AlturaSegundoPiso: SegPiso}
+	
+	
+########################################################################
+#PrimerPiso
+###############################################################	
+	
+	
+PPiso -->
+	comp(f){street.front: Fachada1 | top: Piso  | bottom: Piso | side: Fachada2 }
+	
+Piso -->
+	color(.1,.1,.1)
+
+Fachada1 -->
+	split(x){0.4: AreaEsquina | ~3:MuroPriPiso | 4.2: AreaPuertaPPiso | 
+	~3:MuroPriPiso | 0.4: AreaEsquina}
+
+
+MuroPriPiso -->	
+	split(y){0.85:MuroExt01 | 2.2: AreaVentanas | ~1: MuroExt01 | 
+	0.6: SetCorniza("PPiso")}
+	
+AreaVentanas -->
+	split(x){{~3: MuroExt01 | 1.4: Ventana }* | ~3:  MuroExt01}
+	
+Ventana -->
+	i("Ventanas/V1.dae")
+	center(z)
+	
+	
+MuroExt01 -->
+	setupProjection(0, scope.xy, 1.2, 2.5)
+	projectUV(0)
+	texture("MuroEdifBalma2.jpg")
+
+
+############Corniza
+
+SetCorniza(tipo) -->
+	case tipo == "PPiso" :
+		alignScopeToAxes(y)
+		s('1, '1, 0.3)
+		center(x)
+		i("Cornizas/Corn01.dae")
+	case tipo == "SegPiso":
+		s('1, '1, 0.3)
+		center(x)
+		i("Cornizas/Corn02.dae")
+	case tipo == "EsqPPiso":
+		s(scope.sx+0.6, '1, 0.3)
+		center(x)
+		i("Cornizas/Corn01.dae")
+	case tipo == "EsqSegPiso":
+		alignScopeToAxes(y)
+		s(scope.sx+0.6, '1, 0.3)
+		center(x)
+		i("Cornizas/Corn02.dae")
+	case tipo == "EsqTop":
+		s(scope.sx+0.6, '1, 0.1)
+		center(x)
+		i("Cornizas/Corn03.dae")
+	case tipo == "Puerta":
+		alignScopeToAxes(y)
+		s(scope.sx+0.5, '1, 0.3)
+		center(x)
+		i("Cornizas/Corn01.dae")
+	else:
+		Corn.
+
+#####################
+	
+Fachada2 -->
+	split(x){0.4: AreaEsquina | ~1:MuroPriPiso | 0.4: AreaEsquina}
+	
+	
+##
+AreaEsquina -->
+	split(y){ {0.25:Bloque1 | 0.02: NoBloque | 0.25: Bloque2| 
+	0.02: NoBloque}* | 0.6: SetCorniza("EsqPPiso")}
+	
+Bloque1 -->
+	s(scope.sx+0.1,'1,0.05) 
+	center(x)		
+	i("builtin:cube")
+	
+	
+NoBloque -->
+	color(1,1,1)
+	
+Bloque2 -->
+	s(scope.sx+0.26,'1,0.05) 
+	#t(0,0,'-0.9) 
+	center(x)
+	i("builtin:cube")
+	
+Borde1 -->
+	extrude(0.03)	
+##	
+
+	
+############################################################
+#SegundoPiso
+#####################################################################
+	
+	
+SegPiso -->
+	comp(f){top: AreaTecho | street.front: FachadaSegP1 | side: FachadaSegP2}
+	
+	
+FachadaSegP1 -->
+	split(x){0.4: AreaEsquinaSegPiso | ~3:MuroSegPiso | 4.2: AreaPuertaSegPiso | 
+	~3:MuroSegPiso | 0.4: AreaEsquinaSegPiso}
+ 
+FachadaSegP2 -->
+	split(x){0.4: AreaEsquinaSegPiso | ~1:MuroSegPiso | 0.4: AreaEsquinaSegPiso}
+	
+AreaEsquinaSegPiso -->
+	split(y){ {0.25:Bloque1 | 0.02: NoBloque | 0.25: Bloque2| 
+	0.02: NoBloque}* | 0.45: SetCorniza("EsqSegPiso")}
+	
+	
+
+MuroSegPiso -->
+	split(y){0.85:MuroExt01 | 2.2: AreaVentanasSegPis | ~1: MuroExt01 | 
+	0.45: SetCorniza("SegPiso")}
+	
+AreaVentanasSegPis -->
+	split(x){{~3: MuroExt01 | 1.4: Ventana2 }* | ~3:  MuroExt01}
+	
+Ventana2 -->
+	i("Ventanas/V2.dae")
+	center(z)	
+	
+############################	
+#Puerta
+############################
+	
+	
+AreaPuertaPPiso -->
+	split(x){0.6:AreaPilar | ~1: PuertaPPiso | 0.6:AreaPilar}
+	
+PuertaPPiso -->
+	split(x){0.2: LadoPuerta | ~1: Puerta | 0.2: LadoPuerta}
+	
+LadoPuerta -->
+	split(y){~1: MuroExt01 | 0.6:SetCorniza("PPiso")}
+	
+Puerta -->
+	split(y){2.95: SetPuerta | ~1: MuroExt01 | 0.6: SetCorniza("PPiso")}
+	
+SetPuerta -->
+	s('1,3.5,0.2)
+	center(x)
+	i("Puertas/PConDintel/Puerta03.dae")
+
+AreaPilar -->
+	split(y){~1:Pilar | 0.6: CornizaPilar}
+	
+Pilar -->
+	extrude(0.34)
+	rotateScope(90, 0, 0)
+	comp(f){side: RecubPilar}
+	
+RecubPilar -->	
+	alignScopeToAxes(y)
+	split(y){ 0.25:Bloque1 | 0.02: NoBloque }* 
+	
+	
+CornizaPilar -->
+	extrude(0.34)
+	rotateScope(90, 0, 0)
+	comp(f){side: SetCorniza("Puerta")}
+	
+	
+AreaPuertaSegPiso -->
+	split(x){0.6:AreaPilar2 | ~1: PuertaSegPiso | 0.6:AreaPilar2}
+
+AreaPilar2 -->
+	split(y){~1:Pilar2 | 0.45: CornizaPilar2}
+
+Pilar2 -->
+	extrude(0.1)
+	
+
+CornizaPilar2 -->
+	extrude(0.2)
+	rotateScope(90,0,0)
+	comp(f){side: SetCorniza("EsqSegPiso")}
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+######################
+#BordeSuperior
+######################
+
+
+	
+AreaTecho -->
+	extrude(1.1)
+	comp(f){top:Techo | side: BordeTecho}
+	
+Techo -->
+	roofHip(10)
+	comp(f){all:TextTecho} 
+	
+TextTecho -->
+	setupProjection(0, scope.xy, 5.5, 5.5)
+	projectUV(0)
+	texture("0Texturas/Techumbre/tileRoof_5.jpg")
+	
+BordeTecho -->
+	split(x){0.4: AreaEsquinaTop | ~1: MuroTop | 0.5: Dintel | ~1: MuroTop | 0.4: AreaEsquinaTop}
+
+Dintel -->
+	s(5.2, '1.4, 0.45)
+	center(x)
+	i("Cornizas/CornBlanca04.dae")
+	
+AreaEsquinaTop -->	
+	split(y){ {0.25:Bloque1 | 0.02: NoBloque | 0.25: Bloque2| 
+	0.02: NoBloque}* | 0.15: SetCorniza("EsqTop")}
+	
+MuroTop -->
+	split(y){0.25: BordeTecho1 | ~1: MuroExt01 | 0.15: CornizaTecho}	
+	
+	
+BordeTecho1 -->	
+	s('1,'1,0.05) 
+	center(x)		
+	i("builtin:cube")
+	
+CornizaTecho -->
+	SetCorniza("EsqTop")
+	
